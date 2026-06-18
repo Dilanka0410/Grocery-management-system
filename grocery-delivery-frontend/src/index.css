@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@source "../index.html";
+@source "./**/*.{js,ts,jsx,tsx}";
+
+body {
+  @apply font-sans antialiased bg-gray-50 text-gray-900;
+}
