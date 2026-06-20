@@ -7,8 +7,17 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// 💡 ෆ්‍රන්ට්එන්ඩ් පෝට් දෙකටම වැඩ කරන්න ඇරේ එකක් හැදුවා මචං
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
+// 💡 5173, 5174, 5176 වගේම උඹේ අලුත්ම පෝට් එක වෙන 5177 ත් Socket.io එකටත් එකතු කළා මචං!
+const allowedOrigins = [
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'http://localhost:5176',
+    'http://localhost:5177', 
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5176',
+    'http://127.0.0.1:5177'  
+];
 
 connectDB().then(() => {
     const server = app.listen(PORT, () => {
@@ -17,7 +26,7 @@ connectDB().then(() => {
 
     const io = new Server(server, {
         cors: {
-            // 💡 මෙතනට allowedOrigins ඇරේ එක දුන්නාම 5173, 5174 දෙකටම සුපිරියට වැඩ!
+            // 💡 දැන් සේරම පෝට්ස් ටික Socket.io එකටත් ඇලවුඩ් මචං!
             origin: allowedOrigins, 
             methods: ['GET', 'POST'],
             credentials: true

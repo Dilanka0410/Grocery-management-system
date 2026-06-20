@@ -9,8 +9,13 @@ const errorMiddleware = require('./middleware/error.middleware');
 
 const app = express();
 
-// 💡 මෙතනට මම 5173 සහ 5174 පෝට් දෙකටම වැඩ කරන ලොජික් එක දැම්මා මචං
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
+// 💡 ලෙඩේ හැදුවා: Localhost වගේම 127.0.0.1 පෝට්ස් ටිකත් ඇතුළත් කළා මචං!
+const allowedOrigins = [
+    'http://localhost:5173', 
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -26,7 +31,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// API Routes (must match frontend baseURL: http://localhost:5000/api)
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
