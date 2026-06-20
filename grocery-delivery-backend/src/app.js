@@ -9,12 +9,16 @@ const errorMiddleware = require('./middleware/error.middleware');
 
 const app = express();
 
-// 💡 ලෙඩේ හැදුවා: Localhost වගේම 127.0.0.1 පෝට්ස් ටිකත් ඇතුළත් කළා මචං!
+// 💡 FIX: උඹේ ෆ්‍රන්ට්එන්ඩ් එක දුවන 5176 සහ 5177 පෝට්ස් ටිකත් මෙතනට ඇතුළත් කළා මචං!
 const allowedOrigins = [
     'http://localhost:5173', 
     'http://localhost:5174',
+    'http://localhost:5176',
+    'http://localhost:5177', 
     'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174'
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5176',
+    'http://127.0.0.1:5177'
 ];
 
 app.use(cors({
@@ -23,6 +27,8 @@ app.use(cors({
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            // ලෙඩේ හොයාගන්න ලේසි වෙන්න කන්සෝල් එකේ පෝට් එක ප්‍රින්ට් කරමු
+            console.log(`[CORS REJECTED] Origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },

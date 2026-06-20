@@ -20,7 +20,8 @@ const allowedOrigins = [
 ];
 
 connectDB().then(() => {
-    const server = app.listen(PORT, () => {
+    // 💡 මාරු කළා මචං! '0.0.0.0' දැම්මාම IPv4, IPv6, localhost, 127.0.0.1 ඕනෑම එකකින් එන රික්වෙස්ට් සර්වර් එක බාරගන්නවා!
+    const server = app.listen(PORT, '0.0.0.0', () => {
         console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
     });
 
