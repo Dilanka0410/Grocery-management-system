@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { fetchProducts, addToCartAPI } from '../services/api';
+import { fetchProducts } from '../services/api'; // 💡 addToCartAPI එක මෙතනින් අයින් කළා, මොකද ඒක දැන් Context එක ඇතුලෙන් වෙන්නේ
+import { useCart } from '../context/CartContext'; // 💡 අලුතින් හදපු Cart Context එක මෙතනට ගත්තා මචං!
 import { Clock, ShieldCheck, Truck, Plus, Minus, X, ShoppingCart } from 'lucide-react';
 
 const Home = () => {
+    const { addToCart } = useCart(); // 💡 Context එකේ තියෙන addToCart ෆන්ක්ෂන් එක මෙතනට ගත්තා මචං
     const [products, setProducts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [loading, setLoading] = useState(true);
@@ -42,14 +44,14 @@ const Home = () => {
                 console.log("Fetched Products Data Array:", fetchedData); 
 
                 setProducts(Array.isArray(fetchedData) ? fetchedData : []);
-                setLoading(false);
+                loading && setLoading(false);
             } catch (error) {
                 console.error("Error fetching products:", error);
                 setLoading(false);
             }
         };
         getProductsData();
-    }, []);
+    }, [loading]);
 
     // Add to Cart Click Handler
     const handleAddToCartClick = (product, e) => {
@@ -62,28 +64,32 @@ const Home = () => {
 
     // Confirm Popup එකේ Yes එබුවම ක්‍රියාත්මක වන function එක
     const confirmAddToCart = async () => {
-        if (!productToCart) return; // 💡 ආරක්ෂාවට: productToCart එක හිස්නම් මෙතනින්ම නවත්තනවා මචං
+        if (!productToCart) return; 
         
         try {
             let finalQuantity = quantity;
-            // 💡 ලෙඩේ හැදුවා: Optional chaining (?.) දැම්මා Crash නොවෙන්නම
+            // 💡 Optional chaining (?.) දැම්මා Crash නොවෙන්නම
             const productCat = productToCart.category?.name || productToCart.category;
             
             if (productCat === "Staples") {
                 finalQuantity = selectedWeight === "500g" ? 0.5 : selectedWeight === "2kg" ? 2 : 1;
             }
 
-            await addToCartAPI(productToCart._id, finalQuantity);
+            // 💡 FIX: දැන් සර්විස් එකට විතරක් යවන්නේ නැතුව, මුළු ප්‍රොඩක්ට් ඔබ්ජෙක්ට් එකම quantity එකත් එක්ක Context එකට පාස් කරනවා මචං
+            // එතකොට Context එක ඇතුලෙන් Backend එකටත් සින්ක් වෙලා ලෝකල් ස්ටෝරේජ් එකත් එකපාරම අප්ඩේට් වෙනවා!
+            await addToCart({ ...productToCart, quantity: finalQuantity });
+            
             alert(`${productToCart.name} added to cart successfully!`);
             setShowConfirmPopup(false);
             setSelectedProduct(null); 
         } catch (error) {
-            alert("Failed to add item to cart. Please login first!");
+            console.error("Cart Add Error Details:", error.response?.data || error.message);
+            alert("Failed to add item to cart. Please check if you are logged in correctly!");
             setShowConfirmPopup(false);
         }
     };
 
-    // 💡 100% ක්ම ශුවර් වෙන්න මෙතන කැටගරි ෆිල්ටර් එක ඩේටාබේස් නමටයි ඩිස්ප්ලේ නමටයි දෙකටම මැච් කලා මචං
+    // 💡 100% ක්ම ශුවර් වෙන්න මෙතන කැටගරි ෆිල්ටර් එක ඩේටาබේස් නමටයි ඩිස්ප්ලේ නමටයි දෙකටම මැච් කලා මචං
     const filteredProducts = selectedCategory === "All" 
         ? products 
         : products.filter(p => {
@@ -172,7 +178,6 @@ const Home = () => {
                                     className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col justify-between"
                                 >
                                     <div className="overflow-hidden rounded-xl bg-gray-50 h-48 flex items-center justify-center">
-                                        {/* 💡 ලෙඩේ හැදුවා: currentTarget සහ self-closing tag එක දැම්මා */}
                                         <img 
                                             src={prod.image} 
                                             alt={prod.name} 
@@ -208,7 +213,6 @@ const Home = () => {
                         <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 p-2 rounded-full"><X size={20}/></button>
                         
                         <div className="w-full md:w-1/2 bg-gray-50 rounded-2xl overflow-hidden h-64 flex items-center justify-center">
-                            {/* 💡 ලෙඩේ හැදුවා: currentTarget දැම්මා */}
                             <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=300"; }} />
                         </div>
 

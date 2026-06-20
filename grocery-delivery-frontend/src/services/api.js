@@ -20,5 +20,25 @@ export const loginAPI = (formData) => API.post('/auth/login', formData);
 export const registerAPI = (formData) => API.post('/auth/register', formData);
 export const fetchProducts = () => API.get('/products');
 export const fetchCategories = () => API.get('/categories');
-export const addToCartAPI = (productId, quantity) => API.post('/cart/add', { productId, quantity });
-export const getCartAPI = () => API.get('/cart');
+
+// 💡 මෙතන වෙනස් කළා මචං: LocalStorage එකේ තියෙන Token එක කෙලින්ම Header එකට Force කරලා යවනවා!
+export const addToCartAPI = (productId, quantity) => {
+    const token = localStorage.getItem('token');
+    return API.post('/cart/add', 
+        { productId, quantity },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
+};
+
+export const getCartAPI = () => {
+    const token = localStorage.getItem('token');
+    return API.get('/cart', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};

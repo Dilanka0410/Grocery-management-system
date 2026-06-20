@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
 import { loginAPI } from '../services/api'; // 👈 උඹේ loginAPI එක import කරා
 
@@ -8,7 +8,6 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -19,13 +18,27 @@ const Login = () => {
             // 🚀 උඹේ API Function එක රන් කිරීම
             const res = await loginAPI({ email, password });
             
-            // උඹේ Interceptor එක බලන්නේ 'token' කියලා නිසා ඒ නමින්ම save කරමු
-            localStorage.setItem('token', res.data.token); 
-            localStorage.setItem('user_name', res.data.user?.name || 'User');
+            console.log("Login Full Response Data:", res.data); // 💡 ඩිබග් කරලා බලන්න දාපු එකක් මචං
+
+            // 💡 බැක්එන්ඩ් එකෙන් ටෝකන් එක කොහොම ආවත් (data.token හෝ data.data.token) අහුවෙන්න ලියාගත්තා මචං
+            const token = res.data?.token || res.data?.data?.token;
+            const userName = res.data?.user?.name || res.data?.data?.user?.name || 'User';
+
+            if (token) {
+                // උඹේ Interceptor එක බලන්නේ 'token' කියලා නිසා ඒ නමින්ම save කරමු
+                localStorage.setItem('token', token); 
+                localStorage.setItem('user_name', userName);
+                
+                alert("Successfully Logged In!");
+                
+                // 💡 මාරු කලා මචං! navigate('/') වෙනුවට මේක දැම්මාම Axios එකට අලුත්ම Token එක ක්ෂණිකව අහුවෙනවා!
+                window.location.href = '/'; 
+            } else {
+                setError('Login succeeded, but token was not returned from server.');
+            }
             
-            alert("Successfully Logged In!");
-            navigate('/'); 
         } catch (err) {
+            console.error("Login Fail Details:", err.response?.data || err.message);
             setError(err.response?.data?.message || 'Login failed. Try again!');
         } finally {
             setLoading(false);
