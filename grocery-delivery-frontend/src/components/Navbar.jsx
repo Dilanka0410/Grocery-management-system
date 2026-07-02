@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, MapPin, Search } from 'lucide-react';
+import { ShoppingCart, User, MapPin } from 'lucide-react'; // Search අයින් කළා
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
-    const { getCartCount } = useCart(); // 👈 Live Cart count එක ගන්නවා
+    const { getCartCount } = useCart(); 
 
     return (
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-xs">
@@ -16,20 +16,14 @@ const Navbar = () => {
                         <span className="text-2xl font-black text-green-600 tracking-tight">💡 GROCERY<span className="text-orange-500">DASH</span></span>
                     </Link>
 
-                    {/* Delivery Location */}
+                    {/* Delivery Location - මධ්‍යයට වෙන්න තියෙන නිසා මේක මෙහෙමම තියමු */}
                     <div className="hidden md:flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
                         <MapPin size={18} className="text-orange-500" />
                         <span className="text-sm font-bold text-gray-600">Trincomalee Campus, EU</span>
                     </div>
 
-                    {/* Search Bar */}
-                    <div className="flex-1 max-w-md mx-8 relative hidden sm:block">
-                        <input type="text" placeholder="Search fresh vegetables, fruits, dairy..." className="w-full bg-gray-50 border border-gray-200 rounded-full py-2.5 pl-12 pr-4 text-sm focus:outline-none focus:border-green-500 transition-colors" />
-                        <Search className="absolute left-4 top-3 text-gray-400" size={18} />
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-4">
+                    {/* Action Buttons - Search අයින් කළ නිසා මේක දකුණු පැත්තට ගන්න ml-auto දැම්මා */}
+                    <div className="flex items-center gap-4 ml-auto">
                         <Link to="/cart" className="p-2.5 bg-gray-50 hover:bg-gray-100 rounded-full relative text-gray-700 transition-colors">
                             <ShoppingCart size={22} />
                             {/* Live Badge */}

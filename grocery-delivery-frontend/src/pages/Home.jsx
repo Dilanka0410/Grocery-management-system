@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { fetchProducts } from '../services/api'; // 💡 addToCartAPI එක මෙතනින් අයින් කළා, මොකද ඒක දැන් Context එක ඇතුලෙන් වෙන්නේ
-import { useCart } from '../context/CartContext'; // 💡 අලුතින් හදපු Cart Context එක මෙතනට ගත්තා මචං!
-import { Clock, ShieldCheck, Truck, Plus, Minus, X, ShoppingCart } from 'lucide-react';
+import { fetchProducts } from '../services/api'; 
+import { useCart } from '../context/CartContext'; 
+import { Clock, ShieldCheck, Truck, Plus, Minus, X, ShoppingCart, Search } from 'lucide-react';
 
 const Home = () => {
-    const { addToCart } = useCart(); // 💡 Context එකේ තියෙන addToCart ෆන්ක්ෂන් එක මෙතනට ගත්තා මචං
+    const { addToCart } = useCart(); 
     const [products, setProducts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [loading, setLoading] = useState(true);
+
+    // 💡 Search Query State
+    const [searchQuery, setSearchQuery] = useState(""); 
 
     // Modals and Popups State
     const [selectedProduct, setSelectedProduct] = useState(null); 
@@ -19,7 +22,6 @@ const Home = () => {
     const [quantity, setQuantity] = useState(1);
     const [selectedWeight, setSelectedWeight] = useState("1kg");
 
-    // 💡 ඩේටාබේස් එකේ තියෙන ඇත්තම කැටගරි නමින් Display එක ලස්සනට පෙන්වන්න Map එකක් මචං
     const categoryDisplayNames = {
         "All": "All Items",
         "Staples": "Staples (Sugar/Rice)",
@@ -29,7 +31,6 @@ const Home = () => {
         "Fresh Produce (Vegetables)": "Fresh Vegetables"
     };
 
-    // Database එකේ තියෙන සිරාවටම මැච් වෙන කැටගරි ලිස්ට් එක මචං මේක
     const categories = ["All", "Staples", "Snacks & Confectionery", "Dairy & Beverages", "Fresh Produce (Fruits)", "Fresh Produce (Vegetables)"];
 
     // Backend API එකෙන් ඩේටා Fetch කිරීම
@@ -37,21 +38,16 @@ const Home = () => {
         const getProductsData = async () => {
             try {
                 const response = await fetchProducts();
-                console.log("Full Axios Response:", response); 
-
-                // 💡 apiResponse helper එකේ හැටියට .data.data එක ඇතුලට එන array එක නූලටම ගන්නවා
                 const fetchedData = response.data?.data || response.data;
-                console.log("Fetched Products Data Array:", fetchedData); 
-
                 setProducts(Array.isArray(fetchedData) ? fetchedData : []);
-                loading && setLoading(false);
+                setLoading(false);
             } catch (error) {
                 console.error("Error fetching products:", error);
                 setLoading(false);
             }
         };
         getProductsData();
-    }, [loading]);
+    }, []);
 
     // Add to Cart Click Handler
     const handleAddToCartClick = (product, e) => {
@@ -68,15 +64,12 @@ const Home = () => {
         
         try {
             let finalQuantity = quantity;
-            // 💡 Optional chaining (?.) දැම්මා Crash නොවෙන්නම
             const productCat = productToCart.category?.name || productToCart.category;
             
             if (productCat === "Staples") {
                 finalQuantity = selectedWeight === "500g" ? 0.5 : selectedWeight === "2kg" ? 2 : 1;
             }
 
-            // 💡 FIX: දැන් සර්විස් එකට විතරක් යවන්නේ නැතුව, මුළු ප්‍රොඩක්ට් ඔබ්ජෙක්ට් එකම quantity එකත් එක්ක Context එකට පාස් කරනවා මචං
-            // එතකොට Context එක ඇතුලෙන් Backend එකටත් සින්ක් වෙලා ලෝකල් ස්ටෝරේජ් එකත් එකපාරම අප්ඩේට් වෙනවා!
             await addToCart({ ...productToCart, quantity: finalQuantity });
             
             alert(`${productToCart.name} added to cart successfully!`);
@@ -89,25 +82,30 @@ const Home = () => {
         }
     };
 
-    // 💡 100% ක්ම ශුවර් වෙන්න මෙතන කැටගරි ෆිල්ටර් එක ඩේටาබේස් නමටයි ඩිස්ප්ලේ නමටයි දෙකටම මැච් කලා මචං
-    const filteredProducts = selectedCategory === "All" 
-        ? products 
-        : products.filter(p => {
-            const productCategoryName = p.category && typeof p.category === 'object' ? p.category.name : p.category;
-            
-            if (!productCategoryName) return false;
+    // 💡 සර්ච් එක 100% ක්ම වැඩ කල පරණ සුපිරිම ෆිල්ටර් ලොජික් එක
+    const filteredProducts = products.filter(p => {
+        if (!p || !p.name) return false;
 
-            const currentDisplayName = categoryDisplayNames[selectedCategory] || selectedCategory;
+        // සර්ච් බාර් එකේ ටයිප් කරලා තියෙනවා නම් කෙලින්ම නම විතරක් සර්ච් කරනවා
+        if (searchQuery.trim() !== "") {
+            return p.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+        }
 
-            return (
+        // සර්ච් එක හිස් නම් විතරක් කැටගරි ෆිල්ටර් එක වැඩ කරනවා
+        const productCategoryName = p.category && typeof p.category === 'object' ? p.category.name : p.category;
+        const currentDisplayName = categoryDisplayNames[selectedCategory] || selectedCategory;
+        
+        return selectedCategory === "All" || (
+            productCategoryName && (
                 productCategoryName.toLowerCase() === selectedCategory.toLowerCase() ||
                 productCategoryName.toLowerCase() === currentDisplayName.toLowerCase() ||
                 (selectedCategory === "Fresh Produce (Vegetables)" && productCategoryName.toLowerCase().includes("vegetable")) ||
                 (selectedCategory === "Fresh Produce (Fruits)" && productCategoryName.toLowerCase().includes("fruit")) ||
                 (selectedCategory === "Dairy & Beverages" && productCategoryName.toLowerCase().includes("dairy")) ||
                 (selectedCategory === "Snacks & Confectionery" && productCategoryName.toLowerCase().includes("snack"))
-            );
-        });
+            )
+        );
+    });
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans antialiased">
@@ -121,6 +119,25 @@ const Home = () => {
                         <h1 className="text-4xl md:text-5xl font-black text-white mt-4 leading-tight">Fresh Groceries <br />At Your Doorstep.</h1>
                         <p className="text-green-100 mt-4 text-lg">Order fresh vegetables, snacks, and everyday staples at unbeatable prices.</p>
                     </div>
+                </div>
+            </div>
+
+            {/* 💡 අර වැඩ කරපු රතු සර්ච් බාර් එකේ ලොජික් එකමයි මචං, හැබැයි CSS හිරවෙන්නෙ නැති වෙන්න පියුර් ස්ටයිල්ස් වලින් ලස්සන කරලා තියෙන්නේ */}
+            <div style={{ padding: '0 16px', marginTop: '32px', width: '100%', maxWidth: '48rem', margin: '32px auto 0 auto', position: 'relative', zIndex: 9999 }}>
+                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', padding: '6px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <Search style={{ color: '#9ca3af', marginRight: '8px' }} size={22} />
+                    <input 
+                        type="text" 
+                        placeholder="Search fresh groceries (e.g., Rice, Sugar, Milk)..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)} 
+                        style={{ width: '100%', padding: '12px 0', backgroundColor: 'transparent', color: '#374151', fontSize: '16px', border: 'none', outline: 'none' }}
+                    />
+                    {searchQuery && (
+                        <button onClick={() => setSearchQuery("")} style={{ color: '#9ca3af', backgroundColor: '#f3f4f6', padding: '4px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <X size={16} />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -147,7 +164,10 @@ const Home = () => {
                     {categories.map(cat => (
                         <button 
                             key={cat} 
-                            onClick={() => setSelectedCategory(cat)}
+                            onClick={() => { 
+                                setSelectedCategory(cat); 
+                                setSearchQuery(""); 
+                            }}
                             className={`px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all duration-200 ${selectedCategory === cat ? 'bg-green-600 text-white shadow-md shadow-green-200' : 'bg-white border border-gray-200 text-gray-600 hover:border-green-400'}`}
                         >
                             {categoryDisplayNames[cat] || cat}
@@ -159,21 +179,23 @@ const Home = () => {
             {/* Products Grid */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-24">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-black text-gray-800">{categoryDisplayNames[selectedCategory] || selectedCategory} Products</h2>
-                    <span className="text-sm font-semibold text-gray-400">{filteredProducts.length} Items Available</span>
+                    <h2 className="text-2xl font-black text-gray-800">
+                        {searchQuery ? `Search Results for "${searchQuery}"` : `${categoryDisplayNames[selectedCategory] || selectedCategory} Products`}
+                    </h2>
+                    <span className="text-sm font-semibold text-gray-400">{filteredProducts.length} Items Found</span>
                 </div>
                 
                 {loading ? (
                     <p className="text-center text-gray-500 mt-10 font-medium">Loading fresh products...</p>
                 ) : filteredProducts.length === 0 ? (
-                    <p className="text-center text-gray-500 mt-10 font-medium">No products found in this category.</p>
+                    <p className="text-center text-gray-500 mt-10 font-medium">No products found matching your criteria.</p>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-6">
-                        {filteredProducts.map(prod => {
+                        {filteredProducts.map((prod, index) => {
                             const catName = prod.category && typeof prod.category === 'object' ? prod.category.name : prod.category;
                             return (
                                 <div 
-                                    key={prod._id} 
+                                    key={index} 
                                     onClick={() => { setSelectedProduct(prod); setProductToCart(prod); }}
                                     className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col justify-between"
                                 >

@@ -1,17 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/Order.model'); // 💡 උඹේ Order Model එකේ පාත් එක බලලා දාපන් මචං
-// const { protect, admin } = require('../middleware/auth.middleware'); 
-// 👆 උඩ ලයින් එක දැනට Comment කරලා තියපන්, පස්සේ ඇඩ්මින්ට විතරක් බ්ලොක් කරන්න මේක දාමු.
+const Order = require('../models/Order.model');
 
-// 1️⃣ ඔක්කොම ඕඩර්ස් ටික ඇඩ්මින්ට පෙන්වන්න ගන්න API එක
+// 1️⃣ ඔක්කොම ඕඩර්ස් ටික ගන්න API එක
 router.get('/orders', async (req, res) => {
     try {
-        // .populate() එකෙන් කරන්නේ User ගේ නම/ඊමේල් සහ Product එකේ විස්තර ඔටෝමැටිකලි ඇදලා ගන්න එක
+        // Model එකේ 'customer' කියලා තියෙන නිසා 'user' වෙනුවට 'customer' දාන්න ඕනේ
         const orders = await Order.find()
-            .populate('user', 'name email phone') 
+            .populate('customer', 'name email phone') 
             .populate('items.product', 'name price')
-            .sort({ createdAt: -1 }); // අලුත්ම ඕඩර්ස් උඩටම එනවා
+            .sort({ createdAt: -1 });
 
         return res.status(200).json(orders);
     } catch (error) {
@@ -20,12 +18,14 @@ router.get('/orders', async (req, res) => {
     }
 });
 
-// 2️⃣ ඕඩර් එකේ Tracking Status එක (Pending, Shipped, Delivered) අප්ඩේට් කරන API එක
+// 2️⃣ ඕඩර් එකේ Status එක අප්ඩේට් කරන API එක
 router.put('/orders/:id/status', async (req, res) => {
     try {
-        const { status } = req.body; // Front-end එකෙන් එවන අලුත් status එක (e.g., 'Shipped')
+        const { status } = req.body; 
 
-        const allowedStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+        // Model එකේ enum එකේ තියෙන අකුරු වලටම සමාන වෙන්න ඕනේ (Lowercase)
+        const allowedStatuses = ['pending', 'confirmed', 'cooking', 'out-for-delivery', 'delivered', 'cancelled'];
+        
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({ message: 'Invalid status value!' });
         }

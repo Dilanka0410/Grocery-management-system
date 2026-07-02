@@ -19,24 +19,43 @@ const allowedOrigins = [
     'http://127.0.0.1:5177'  
 ];
 
-connectDB().then(() => {
-    // 💡 මාරු කළා මචං! '0.0.0.0' දැම්මාම IPv4, IPv6, localhost, 127.0.0.1 ඕනෑම එකකින් එන රික්වෙස්ට් සර්වර් එක බාරගන්නවා!
-    const server = app.listen(PORT, '0.0.0.0', () => {
-        console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
-    });
+connectDB()
+    .then(() => {
+        // 💡 මාරු කළා මචං! '0.0.0.0' දැම්මාම IPv4, IPv6, localhost, 127.0.0.1 ඕනෑම එකකින් එන රික්වෙස්ට් සර්වර් එක බාරගන්නවා!
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
+        });
 
-    const io = new Server(server, {
-        cors: {
-            // 💡 දැන් සේරම පෝට්ස් ටික Socket.io එකටත් ඇලවුඩ් මචං!
-            origin: allowedOrigins, 
-            methods: ['GET', 'POST'],
-            credentials: true
-        }
-    });
+        const io = new Server(server, {
+            cors: {
+                // 💡 දැන් සේරම පෝට්ස් ටික Socket.io එකටත් ඇලවුඩ් මචං!
+                origin: allowedOrigins,
+                methods: ['GET', 'POST'],
+                credentials: true
+            }
+        });
 
-    io.on('connection', (socket) => {
-        console.log('A user connected via socket:', socket.id);
+        io.on('connection', (socket) => {
+            console.log('A user connected via socket:', socket.id);
+        });
+    })
+    .catch(err => {
+        console.error('Database connection failed:', err.message);
+        console.log('[SERVER] Starting without database connection. API routes that require MongoDB will fail until the database is reachable.');
+
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
+        });
+
+        const io = new Server(server, {
+            cors: {
+                origin: allowedOrigins,
+                methods: ['GET', 'POST'],
+                credentials: true
+            }
+        });
+
+        io.on('connection', (socket) => {
+            console.log('A user connected via socket:', socket.id);
+        });
     });
-}).catch(err => {
-    console.error('Database connection failed:', err);
-});

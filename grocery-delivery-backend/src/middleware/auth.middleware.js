@@ -36,4 +36,14 @@ const protect = async (req, res, next) => {
     }
 };
 
-module.exports = protect;
+
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        return ApiResponse.error(res, "Access denied. Admins only!", 403);
+    }
+};
+
+module.exports = { protect, isAdmin };
+

@@ -1,5 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+
+
+
+
 const authRoutes = require('./routes/auth.routes');
 const orderRoutes = require('./routes/order.routes');
 const productRoutes = require('./routes/product.routes');
@@ -21,6 +26,8 @@ const allowedOrigins = [
     'http://127.0.0.1:5177'
 ];
 
+app.use(helmet());
+
 app.use(cors({
     origin: function (origin, callback) {
         // origin එකක් නැති වෙලාවටත් (උදා: Postman) අවසර දෙනවා
@@ -36,6 +43,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -43,6 +51,12 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
+
+
+app.get('/', (req, res) => {
+    res.send('GroceryDash API is running perfectly! 🚀');
+}); 
+
 
 // Global Error Handler
 app.use(errorMiddleware);

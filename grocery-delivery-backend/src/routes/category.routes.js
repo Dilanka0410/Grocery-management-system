@@ -1,6 +1,6 @@
 const express = require('express');
 const { getCategories, createCategory } = require('../controllers/category.controller');
-const protect = require('../middleware/auth.middleware');
+const { protect } = require('../middleware/auth.middleware');
 const authorizeRoles = require('../middleware/role.middleware');
 const router = express.Router();
 
