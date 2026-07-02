@@ -16,7 +16,39 @@ const orderSchema = new mongoose.Schema({
         enum: ['pending', 'confirmed', 'cooking', 'out-for-delivery', 'delivered', 'cancelled'], 
         default: 'pending' 
     },
-    deliveryAddress: { type: String, required: true }
+    shippingAddress: {
+        fullName: { type: String, required: true },
+        phone: { type: String, required: true },
+        houseNo: { type: String, required: true },
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        district: { type: String, required: true },
+        province: { type: String, required: true },
+        landmark: { type: String },
+        addressLabel: { type: String, enum: ['Home', 'Office', 'Other'], default: 'Home' }
+    },
+    deliveryAddress: {
+        type: String,
+        required: true,
+        default: function () {
+            if (!this.shippingAddress) return undefined;
+            const { houseNo, street, city, district, province } = this.shippingAddress;
+            if (houseNo && street && city && district && province) {
+                return `${houseNo}, ${street}, ${city}, ${district}, ${province}`;
+            }
+            return undefined;
+        }
+    }
 }, { timestamps: true });
+
+orderSchema.pre('validate', function (next) {
+    if (!this.deliveryAddress && this.shippingAddress) {
+        const { houseNo, street, city, district, province } = this.shippingAddress;
+        if (houseNo && street && city && district && province) {
+            this.deliveryAddress = `${houseNo}, ${street}, ${city}, ${district}, ${province}`;
+        }
+    }
+    next();
+});
 
 module.exports = mongoose.model('Order', orderSchema);

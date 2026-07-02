@@ -5,6 +5,7 @@ const ApiResponse = require('../utils/apiResponse');
 const getProducts = async (req, res, next) => {
     try {
         const products = await Product.find({ isActive: true }).populate('category', 'name');
+        console.log(`[PRODUCTS] fetched ${products.length} items from DB`);
         return ApiResponse.success(res, products, "Products fetched successfully");
     } catch (error) { next(error); }
 };

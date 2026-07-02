@@ -15,6 +15,11 @@ export const CartProvider = ({ children }) => {
 
     // 💡 1. Cart එකට බඩු එකතු කිරීම (Local + Backend)
     const addToCart = async (product) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Please login to add items to your cart.');
+        }
+
         // පළමුව ලෝකල් ස්ටේට් එක අප්ඩේට් කරනවා (UI එක ක්ෂණිකව අප්ඩේට් වෙන්න)
         setCart((prevCart) => {
             const existingItem = prevCart.find(item => item._id === product._id);
@@ -28,13 +33,10 @@ export const CartProvider = ({ children }) => {
 
         // දෙවනුව බැක්එන්ඩ් ඩේටාබේස් එකට සේව් කරනවා
         try {
-            const token = localStorage.getItem('token'); // උඹේ Login Token එක ගන්න තැන
-            if (token) {
-                await axios.post('http://localhost:5000/api/cart/add', 
-                    { productId: product._id, quantity: 1 },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-            }
+            await axios.post('http://127.0.0.1:5000/api/cart/add', 
+                { productId: product._id, quantity: 1 },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
         } catch (error) {
             console.error("Backend cart sync failed:", error);
         }
@@ -42,17 +44,18 @@ export const CartProvider = ({ children }) => {
 
     // 💡 2. Qty අඩු කිරීම හෝ අයින් කිරීම (Local + Backend)
     const removeFromCart = async (productId) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Please login to remove items from your cart.');
+        }
+
         setCart(prevCart => prevCart.filter(item => item._id !== productId));
 
         try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                // උඹේ බැක්එන්ඩ් එකේ රිමූව් කරන රූට් එක මෙතනට දාන්න මචං
-                await axios.post('http://localhost:5000/api/cart/remove', 
-                    { productId },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-            }
+            await axios.post('http://127.0.0.1:5000/api/cart/remove', 
+                { productId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
         } catch (error) {
             console.error("Backend remove failed:", error);
         }
@@ -60,6 +63,11 @@ export const CartProvider = ({ children }) => {
 
     // 💡 3. Quantity එක වෙනස් කිරීම (Local + Backend)
     const updateQuantity = async (productId, amount) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Please login to update cart quantities.');
+        }
+
         setCart(prevCart => prevCart.map(item => {
             if (item._id === productId) {
                 const newQty = item.quantity + amount;
@@ -69,14 +77,10 @@ export const CartProvider = ({ children }) => {
         }));
 
         try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                // බැක්එන්ඩ් එකේ quantity update කරන රූට් එක
-                await axios.put('http://localhost:5000/api/cart/update', 
-                    { productId, amount },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-            }
+            await axios.put('http://127.0.0.1:5000/api/cart/update', 
+                { productId, amount },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
         } catch (error) {
             console.error("Backend update failed:", error);
         }

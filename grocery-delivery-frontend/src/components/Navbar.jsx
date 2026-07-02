@@ -1,10 +1,18 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingCart, User, MapPin } from 'lucide-react'; // Search අයින් කළා
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingCart, User, MapPin, LogOut, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
-    const { getCartCount } = useCart(); 
+    const { getCartCount } = useCart();
+    const navigate = useNavigate();
+    const userInfo = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null;
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('user_name');
+        window.location.href = '/login';
+    };
 
     return (
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-xs">
@@ -22,20 +30,32 @@ const Navbar = () => {
                         <span className="text-sm font-bold text-gray-600">Trincomalee Campus, EU</span>
                     </div>
 
-                    {/* Action Buttons - Search අයින් කළ නිසා මේක දකුණු පැත්තට ගන්න ml-auto දැම්මා */}
+                    {/* Action Buttons */}
                     <div className="flex items-center gap-4 ml-auto">
+                        {userInfo?.role === 'admin' && (
+                            <button onClick={() => navigate('/admin')} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors">
+                                <ShieldCheck size={16} /> Admin
+                            </button>
+                        )}
+
                         <Link to="/cart" className="p-2.5 bg-gray-50 hover:bg-gray-100 rounded-full relative text-gray-700 transition-colors">
                             <ShoppingCart size={22} />
-                            {/* Live Badge */}
                             <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center scale-95">
                                 {getCartCount()}
                             </span>
                         </Link>
-                        
-                        <Link to="/login" className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full hover:bg-green-700 font-bold text-xs uppercase tracking-wider transition-colors shadow-sm">
-                            <User size={16} />
-                            <span>Login</span>
-                        </Link>
+
+                        {userInfo ? (
+                            <button onClick={handleLogout} className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full hover:bg-green-700 font-bold text-xs uppercase tracking-wider transition-colors shadow-sm">
+                                <LogOut size={16} />
+                                <span>Logout</span>
+                            </button>
+                        ) : (
+                            <Link to="/login" className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full hover:bg-green-700 font-bold text-xs uppercase tracking-wider transition-colors shadow-sm">
+                                <User size={16} />
+                                <span>Login</span>
+                            </Link>
+                        )}
                     </div>
 
                 </div>

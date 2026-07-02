@@ -32,7 +32,7 @@ exports.register = async (req, res) => {
         return res.status(201).json({ 
             message: 'User registered successfully!',
             token: token,
-            user: { id: newUser._id, name: newUser.name, email: newUser.email }
+            user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role }
         });
 
     } catch (error) {
@@ -69,7 +69,7 @@ exports.login = async (req, res) => {
         // රෙස්පොන්ස් එක ෆ්‍රන්ට්එන්ඩ් එකට යැවීම
         return res.status(200).json({
             token: token,
-            user: { id: user._id, name: user.name, email: user.email }
+            user: { id: user._id, name: user.name, email: user.email, role: user.role }
         });
         
     } catch (error) {

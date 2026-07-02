@@ -1,16 +1,72 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import Navbar from '../components/Navbar';
+import ShippingForm from '../components/ShippingForm';
 import { Trash2, Plus, Minus, CreditCard, ShoppingBag, MapPin, CheckCircle } from 'lucide-react';
+import { createOrderAPI, initiatePaymentAPI } from '../services/api';
 
 const Cart = () => {
     const { cart, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
     const [orderStep, setOrderStep] = useState('cart'); // cart -> tracking
     const [paymentMethod, setPaymentMethod] = useState('cod');
+    const [shippingAddress, setShippingAddress] = useState({
+        fullName: '',
+        phone: '',
+        houseNo: '',
+        street: '',
+        city: '',
+        district: '',
+        province: '',
+        landmark: '',
+        addressLabel: 'Home'
+    });
 
-    const handlePlaceOrder = () => {
-        if(cart.length === 0) return alert("Your cart is empty!");
-        setOrderStep('tracking'); // කෙලින්ම Tracking Screen එකට මාරු කිරීම
+    const handlePlaceOrder = async () => {
+        if (cart.length === 0) return alert("Your cart is empty!");
+
+        if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.houseNo || !shippingAddress.street || !shippingAddress.city || !shippingAddress.district || !shippingAddress.province) {
+            return alert('Please complete your shipping address before placing the order.');
+        }
+
+        try {
+            // Build order payload
+            const itemsPayload = cart.map(item => ({ product: item._id, quantity: item.quantity, price: item.price }));
+            const totalPrice = getCartTotal();
+            const deliveryAddress = `${shippingAddress.houseNo}, ${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.district}, ${shippingAddress.province}`;
+            const orderPayload = { items: itemsPayload, totalPrice, shippingAddress, deliveryAddress, paymentMethod };
+
+            console.log('[CART] placing order payload:', { orderPayload, shippingAddress, deliveryAddress });
+
+            // 1) Create order in backend (status will be 'pending' or 'confirmed' for COD)
+            const res = await createOrderAPI(orderPayload);
+            const order = res.data?.data || res.data;
+
+            if (!order || !order._id) {
+                throw new Error('Failed to create order');
+            }
+
+            // 2) If card payment, initiate payment gateway
+            if (paymentMethod === 'card') {
+                const payRes = await initiatePaymentAPI(order._id);
+                const paymentUrl = payRes.data?.data?.paymentUrl || payRes.data?.paymentUrl;
+                if (paymentUrl) {
+                    // Redirect user to payment gateway
+                    window.location.href = paymentUrl;
+                    return;
+                } else {
+                    throw new Error('Failed to initiate payment');
+                }
+            }
+
+            // 3) For COD, consider order confirmed and show tracking
+            alert('Order created successfully!');
+            clearCart();
+            setOrderStep('tracking');
+
+        } catch (err) {
+            console.error('Place order error:', err.response?.data || err.message);
+            alert('Failed to place order: ' + (err.response?.data?.message || err.message));
+        }
     };
 
     if (orderStep === 'tracking') {
@@ -27,7 +83,7 @@ const Cart = () => {
 
                         {/* Simulated Live Map Tracking Box */}
                         <div className="mt-8 bg-slate-900 text-white p-6 rounded-2xl text-left relative overflow-hidden h-64 flex flex-col justify-between shadow-inner">
-                            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[16px_16px]"></div>
                             
                             <div className="z-10 flex justify-between items-center">
                                 <div>
@@ -107,9 +163,10 @@ const Cart = () => {
 
                         {/* Payment & Summary */}
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-fit space-y-6">
-                            <h3 className="font-black text-lg text-gray-800 border-b border-gray-100 pb-3">Order Summary</h3>
-                            
-                            {/* Payment Options */}
+                            <h3 className="font-black text-lg text-gray-800 border-b border-gray-100 pb-3">Shipping Information</h3>
+                            <ShippingForm shippingAddress={shippingAddress} setShippingAddress={setShippingAddress} />
+
+                            <h3 className="font-black text-lg text-gray-800 border-b border-gray-100 pb-3">Payment Method</h3>
                             <div>
                                 <label className="text-xs font-bold text-gray-400 block uppercase mb-3">Choose Payment Method</label>
                                 <div className="grid grid-cols-2 gap-3">

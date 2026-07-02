@@ -21,6 +21,11 @@ export const registerAPI = (formData) => API.post('/auth/register', formData);
 export const fetchProducts = () => API.get('/products');
 export const fetchCategories = () => API.get('/categories');
 
+export const createOrderAPI = (orderData) => API.post('/orders', orderData);
+export const initiatePaymentAPI = (orderId) => API.post(`/orders/${orderId}/pay`, { orderId });
+export const fetchAdminOrders = () => API.get('/admin/orders');
+export const updateOrderStatus = (orderId, status) => API.put(`/admin/orders/${orderId}/status`, { status });
+
 // 💡 මෙතන වෙනස් කළා මචං: LocalStorage එකේ තියෙන Token එක කෙලින්ම Header එකට Force කරලා යවනවා!
 export const addToCartAPI = (productId, quantity) => {
     const token = localStorage.getItem('token');

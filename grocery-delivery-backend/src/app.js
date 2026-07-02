@@ -6,10 +6,12 @@ const helmet = require('helmet');
 
 
 const authRoutes = require('./routes/auth.routes');
-const orderRoutes = require('./routes/order.routes');
+const { router: orderRoutes, paymentRouter } = require('./routes/order.routes');
+const adminRoutes = require('./routes/admin.route');
 const productRoutes = require('./routes/product.routes');
 const categoryRoutes = require('./routes/category.routes');
 const cartRoutes = require('./routes/cart.routes');
+const { protect, isAdmin } = require('./middleware/auth.middleware');
 const errorMiddleware = require('./middleware/error.middleware');
 
 const app = express();
@@ -48,6 +50,8 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/admin', protect, isAdmin, adminRoutes);
+app.use('/api/payments', paymentRouter);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);

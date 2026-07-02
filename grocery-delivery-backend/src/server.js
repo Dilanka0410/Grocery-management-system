@@ -26,6 +26,9 @@ connectDB()
             console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
         });
 
+        const mongoose = require('mongoose');
+        console.log('[SERVER] mongoose readyState:', mongoose.connection.readyState, 'db name:', mongoose.connection.name);
+
         const io = new Server(server, {
             cors: {
                 // 💡 දැන් සේරම පෝට්ස් ටික Socket.io එකටත් ඇලවුඩ් මචං!

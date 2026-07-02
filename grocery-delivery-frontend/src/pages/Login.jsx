@@ -26,9 +26,11 @@ const Login = () => {
 
             if (token) {
                 // උඹේ Interceptor එක බලන්නේ 'token' කියලා නිසා ඒ නමින්ම save කරමු
-                localStorage.setItem('token', token); 
+                const user = res.data?.user || res.data?.data?.user;
+                localStorage.setItem('token', token);
+                localStorage.setItem('userInfo', JSON.stringify(user || { name: userName }));
                 localStorage.setItem('user_name', userName);
-                
+
                 alert("Successfully Logged In!");
                 
                 // 💡 මාරු කලා මචං! navigate('/') වෙනුවට මේක දැම්මාම Axios එකට අලුත්ම Token එක ක්ෂණිකව අහුවෙනවා!

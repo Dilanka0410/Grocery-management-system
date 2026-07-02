@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { fetchProducts } from '../services/api'; 
 import { useCart } from '../context/CartContext'; 
 import { Clock, ShieldCheck, Truck, Plus, Minus, X, ShoppingCart, Search } from 'lucide-react';
 
 const Home = () => {
+    const navigate = useNavigate();
     const { addToCart } = useCart(); 
     const [products, setProducts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
@@ -51,7 +53,13 @@ const Home = () => {
 
     // Add to Cart Click Handler
     const handleAddToCartClick = (product, e) => {
-        if (e) e.stopPropagation(); 
+        if (e) e.stopPropagation();
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+
         setProductToCart(product);
         setQuantity(1); 
         setSelectedWeight("1kg"); 

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order.model');
+const { protect, isAdmin } = require('../middleware/auth.middleware');
 
 // 1️⃣ ඔක්කොම ඕඩර්ස් ටික ගන්න API එක
-router.get('/orders', async (req, res) => {
+router.get('/orders', protect, isAdmin, async (req, res) => {
     try {
         // Model එකේ 'customer' කියලා තියෙන නිසා 'user' වෙනුවට 'customer' දාන්න ඕනේ
         const orders = await Order.find()
@@ -19,7 +20,7 @@ router.get('/orders', async (req, res) => {
 });
 
 // 2️⃣ ඕඩර් එකේ Status එක අප්ඩේට් කරන API එක
-router.put('/orders/:id/status', async (req, res) => {
+router.put('/orders/:id/status', protect, isAdmin, async (req, res) => {
     try {
         const { status } = req.body; 
 
