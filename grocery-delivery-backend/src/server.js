@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const { Server } = require('socket.io');
+const cors = require('cors');
 const connectDB = require('./config/db');
 const app = require('./app');
 
@@ -7,31 +8,43 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// 💡 5173, 5174, 5176 වගේම උඹේ අලුත්ම පෝට් එක වෙන 5177 ත් Socket.io එකටත් එකතු කළා මචං!
+// 💡 මෙතනට 5175, 5176 එකතු කළා. තව ඕනෙනම් මෙතනට අලුතින් add කරන්න.
 const allowedOrigins = [
     'http://localhost:5173', 
     'http://localhost:5174', 
+    'http://localhost:5175', 
     'http://localhost:5176',
-    'http://localhost:5177', 
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
-    'http://127.0.0.1:5176',
-    'http://127.0.0.1:5177'  
+    'http://127.0.0.1:5175',
+    'http://127.0.0.1:5176'  
 ];
+
+// 💡 CORS configuration එක පිරිසිදු කළා
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 
 connectDB()
     .then(() => {
-        // 💡 මාරු කළා මචං! '0.0.0.0' දැම්මාම IPv4, IPv6, localhost, 127.0.0.1 ඕනෑම එකකින් එන රික්වෙස්ට් සර්වර් එක බාරගන්නවා!
         const server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
         });
 
         const mongoose = require('mongoose');
-        console.log('[SERVER] mongoose readyState:', mongoose.connection.readyState, 'db name:', mongoose.connection.name);
-
+        
+        // Socket.io Config
         const io = new Server(server, {
             cors: {
-                // 💡 දැන් සේරම පෝට්ස් ටික Socket.io එකටත් ඇලවුඩ් මචං!
                 origin: allowedOrigins,
                 methods: ['GET', 'POST'],
                 credentials: true
@@ -44,10 +57,9 @@ connectDB()
     })
     .catch(err => {
         console.error('Database connection failed:', err.message);
-        console.log('[SERVER] Starting without database connection. API routes that require MongoDB will fail until the database is reachable.');
-
+        
         const server = app.listen(PORT, '0.0.0.0', () => {
-            console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT}`);
+            console.log(`[SERVER] Multi-functional Grocery Backend running on port ${PORT} (Database Offline)`);
         });
 
         const io = new Server(server, {
@@ -56,9 +68,5 @@ connectDB()
                 methods: ['GET', 'POST'],
                 credentials: true
             }
-        });
-
-        io.on('connection', (socket) => {
-            console.log('A user connected via socket:', socket.id);
         });
     });

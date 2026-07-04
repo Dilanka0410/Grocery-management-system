@@ -12,7 +12,7 @@ router.get('/orders', protect, isAdmin, async (req, res) => {
             .populate('items.product', 'name price')
             .sort({ createdAt: -1 });
 
-        return res.status(200).json(orders);
+        return res.status(200).json({ data: orders });
     } catch (error) {
         console.error('Fetch Admin Orders Error:', error);
         return res.status(500).json({ message: 'Server Error' });
@@ -39,7 +39,7 @@ router.put('/orders/:id/status', protect, isAdmin, async (req, res) => {
         order.status = status;
         await order.save();
 
-        return res.status(200).json({ message: 'Order status updated successfully!', order });
+        return res.status(200).json({ data: order, message: 'Order status updated successfully!' });
     } catch (error) {
         console.error('Update Order Status Error:', error);
         return res.status(500).json({ message: 'Server Error' });
