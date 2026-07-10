@@ -38,17 +38,25 @@ const orderSchema = new mongoose.Schema({
             }
             return undefined;
         }
+    },
+    paymentMethod: { 
+        type: String, 
+        enum: ['cod', 'card'], 
+        default: 'cod' 
+    },
+    paymentInfo: {
+        status: { type: String },
+        transactionId: { type: String }
     }
 }, { timestamps: true });
 
-orderSchema.pre('validate', function (next) {
+orderSchema.pre('validate', function () {
     if (!this.deliveryAddress && this.shippingAddress) {
         const { houseNo, street, city, district, province } = this.shippingAddress;
         if (houseNo && street && city && district && province) {
             this.deliveryAddress = `${houseNo}, ${street}, ${city}, ${district}, ${province}`;
         }
     }
-    next();
 });
 
 module.exports = mongoose.model('Order', orderSchema);

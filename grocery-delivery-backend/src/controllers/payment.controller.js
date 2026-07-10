@@ -30,7 +30,7 @@ exports.handlePaymentCallback = async (req, res) => {
 // Endpoint to initiate payment (returns payment URL or token)
 exports.initiatePayment = async (req, res) => {
     try {
-        const { orderId } = req.body;
+        const orderId = req.params.orderId || req.body.orderId;
         if (!orderId) return ApiResponse.error(res, 'Missing orderId', 400);
 
         // Load order and verify status

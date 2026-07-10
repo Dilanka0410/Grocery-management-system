@@ -1,48 +1,106 @@
-// 💡 මෙතන next පරාමිතිය එක් කළා (Express middleware signature එකට ගැලපෙන්න)
-const createOrder = async (req, res, next) => { 
-    const session = await Order.db.startSession();
-    try {
-        const { items, totalPrice, shippingAddress, deliveryAddress: bodyDeliveryAddress, paymentMethod } = req.body;
+const Order = require('../models/Order.model');
+const InventoryService = require('../services/inventory.service');
+const ApiResponse = require('../utils/apiResponse');
 
-        if (!items || items.length === 0) {
-            return ApiResponse.error(res, "No order items provided", 400);
-        }
+const createOrder = async (req, res, next) => {
+    let session = null;
+    try {
+        session = await Order.db.startSession();
+    } catch (e) {
+        console.warn('[ORDER] Database does not support transactions/sessions:', e.message);
+    }
 
-        // ... (අනිත් validation ටික එහෙමමයි) ...
+    try {
+        const { items, totalPrice, shippingAddress, deliveryAddress: bodyDeliveryAddress, paymentMethod } = req.body;
 
-        const builtDeliveryAddress = `${shippingAddress.houseNo}, ${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.district}, ${shippingAddress.province}`;
-        const deliveryAddress = bodyDeliveryAddress || builtDeliveryAddress;
+        if (!items || items.length === 0) {
+            return ApiResponse.error(res, "No order items provided", 400);
+        }
 
-        let createdOrder = null;
-        
-        // 💡 Transaction එක ඇතුලේ error එකක් ආවොත් කෙලින්ම throw කරන්න
-        await session.withTransaction(async () => {
-            await InventoryService.validateAndDeductStock(items); 
+        // Validate that all item product IDs are valid 24-character hexadecimal MongoDB ObjectIds
+        const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+        for (const item of items) {
+            if (!item.product || !isValidObjectId(item.product)) {
+                return ApiResponse.error(res, `Invalid product ID format: "${item.product}". Product ID must be a 24-character hexadecimal string.`, 400);
+            }
+        }
 
-            const orderPayload = {
-                customer: req.user._id,
-                items,
-                totalPrice,
-                shippingAddress,
-                deliveryAddress,
-                paymentMethod: paymentMethod || 'cod',
-                status: (paymentMethod && paymentMethod.toLowerCase() === 'cod') ? 'confirmed' : 'pending'
-            };
+        const builtDeliveryAddress = `${shippingAddress.houseNo}, ${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.district}, ${shippingAddress.province}`;
+        const deliveryAddress = bodyDeliveryAddress || builtDeliveryAddress;
 
-            const orderDoc = new Order(orderPayload);
-            createdOrder = await orderDoc.save({ session });
-        });
+        let createdOrder = null;
+        
+        if (session) {
+            try {
+                await session.withTransaction(async () => {
+                    await InventoryService.validateAndDeductStock(items, session); 
 
-        return ApiResponse.success(res, createdOrder, "Order created", 201);
-    } catch (error) {
-        console.error('[ORDER] createOrder error:', error);
-        
-        // 💡 මෙතන ApiResponse එකෙන් පස්සේ next() call කරන්නේ නැහැ.
-        // එරර් එකක් ආවොත් අපි ApiResponse එකෙන් respond කරලා ඉවරයි.
-        return ApiResponse.error(res, error.message || 'Failed to create order', 400);
-    } finally {
-        await session.endSession();
-    }
+                    const orderPayload = {
+                        customer: req.user._id,
+                        items,
+                        totalPrice,
+                        shippingAddress,
+                        deliveryAddress,
+                        paymentMethod: paymentMethod || 'cod',
+                        status: (paymentMethod && paymentMethod.toLowerCase() === 'cod') ? 'confirmed' : 'pending'
+                    };
+
+                    const orderDoc = new Order(orderPayload);
+                    createdOrder = await orderDoc.save({ session });
+                });
+            } catch (txError) {
+                // If the error is due to MongoDB transactions not being supported (standalone local DB)
+                if (txError.message && (txError.message.includes('Transaction numbers are only allowed') || txError.message.includes('replica set'))) {
+                    console.warn('[ORDER] Standalone MongoDB detected. Falling back to non-transactional order creation.');
+                    
+                    // Reset createdOrder
+                    createdOrder = null;
+                    
+                    await InventoryService.validateAndDeductStock(items); 
+
+                    const orderPayload = {
+                        customer: req.user._id,
+                        items,
+                        totalPrice,
+                        shippingAddress,
+                        deliveryAddress,
+                        paymentMethod: paymentMethod || 'cod',
+                        status: (paymentMethod && paymentMethod.toLowerCase() === 'cod') ? 'confirmed' : 'pending'
+                    };
+
+                    const orderDoc = new Order(orderPayload);
+                    createdOrder = await orderDoc.save();
+                } else {
+                    // Re-throw any other validation or database errors
+                    throw txError;
+                }
+            }
+        } else {
+            await InventoryService.validateAndDeductStock(items); 
+
+            const orderPayload = {
+                customer: req.user._id,
+                items,
+                totalPrice,
+                shippingAddress,
+                deliveryAddress,
+                paymentMethod: paymentMethod || 'cod',
+                status: (paymentMethod && paymentMethod.toLowerCase() === 'cod') ? 'confirmed' : 'pending'
+            };
+
+            const orderDoc = new Order(orderPayload);
+            createdOrder = await orderDoc.save();
+        }
+
+        return ApiResponse.success(res, createdOrder, "Order created", 201);
+    } catch (error) {
+        console.error('[ORDER] createOrder error:', error);
+        return ApiResponse.error(res, error.message || 'Failed to create order', 400);
+    } finally {
+        if (session) {
+            await session.endSession();
+        }
+    }
 };
 
-module.exports = { createOrder }; 
+module.exports = { createOrder };

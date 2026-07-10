@@ -2,31 +2,34 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
 const ApiResponse = require('../utils/apiResponse');
 
-// 💡 Secret එකට Fallback එකක් දෙනවා ලොගින් එකේ හැදුවා වගේම
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_fallback_key_for_development_123';
 
 const protect = async (req, res, next) => {
+    // 💡 next එකක් නැත්නම් ප්‍රශ්නයක් තියෙනවා, ඒත් අපි ඒක check කරමු
+    if (typeof next !== 'function') {
+        console.error("Critical Error: 'next' is not a function in protect middleware");
+        return ApiResponse.error(res, "Internal Server Error: Middleware configuration issue", 500);
+    }
+
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
-            
-            // 💡 process.env.JWT_SECRET වෙනුවට අපි උඩින් සෙට් කරපු සේෆ් වැරියබල් එක දානවා
             const decoded = jwt.verify(token, JWT_SECRET);
 
-            // User ගේ විස්තර request එකට දානවා (password එක නැතුව)
             req.user = await User.findById(decoded.id).select('-password');
             
-            // 💡 SECURITY CHECK: ටෝකන් එක වැලිඩ් වුණත් යූසර් කෙනෙක් ඩේටාබේස් එකේ ඇත්තටම ඉන්නවාද බලනවා
             if (!req.user) {
-                return ApiResponse.error(res, "User associated with this token no longer exists", 401);
+                return ApiResponse.error(res, "User no longer exists", 401);
             }
 
-            return next(); // 🚀 ඔක්කොම සිරාවටම හරි නම් ඊළඟ ෆන්ක්ෂන් එකට යන්න දෙනවා
+            // 🚀 return එක අයින් කළා, next() විතරක් call කරන්න
+            next(); 
+            return; // 💡 මෙතනින් function එක නතර කරන්න, තවදුරටත් රන් වෙන්න දෙන්න එපා
             
         } catch (error) {
-            console.error('JWT Verification Middleware Error:', error.message); // 💡 සර්වර් කන්සෝල් එකේ ලෙඩේ බලාගන්න ලොග් එකක් දැම්මා
+            console.error('JWT Verification Error:', error.message);
             return ApiResponse.error(res, "Not authorized, token failed", 401);
         }
     }
@@ -36,8 +39,10 @@ const protect = async (req, res, next) => {
     }
 };
 
-
 const isAdmin = (req, res, next) => {
+    // 💡 මෙතනත් next එකේ type එක චෙක් කරමු
+    if (typeof next !== 'function') return ApiResponse.error(res, "Internal Server Error", 500);
+
     if (req.user && req.user.role === 'admin') {
         next();
     } else {
@@ -46,4 +51,3 @@ const isAdmin = (req, res, next) => {
 };
 
 module.exports = { protect, isAdmin };
-

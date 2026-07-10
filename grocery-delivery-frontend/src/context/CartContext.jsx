@@ -6,7 +6,21 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
         const localData = localStorage.getItem('grocery_cart');
-        return localData ? JSON.parse(localData) : [];
+        if (!localData) return [];
+        try {
+            const parsed = JSON.parse(localData);
+            if (Array.isArray(parsed)) {
+                // Filter out any stale mock items (e.g. _id: "v2") that are not valid ObjectIds
+                const validItems = parsed.filter(item => item && item._id && /^[0-9a-fA-F]{24}$/.test(item._id));
+                if (validItems.length !== parsed.length) {
+                    localStorage.setItem('grocery_cart', JSON.stringify(validItems));
+                }
+                return validItems;
+            }
+        } catch (e) {
+            console.error("Error parsing cart data from localStorage:", e);
+        }
+        return [];
     });
 
     useEffect(() => {

@@ -59,9 +59,14 @@ const Cart = () => {
             setOrderStep('tracking');
 
         } catch (err) {
-            // මෙතන අර කලින් තිබුණ "Order is not defined" error එක නොඑන්න මම නිවැරදි කළා
             console.error('Place order error:', err.response?.data || err.message);
-            alert('Failed to place order: ' + (err.response?.data?.message || err.message));
+            const errMsg = err.response?.data?.message || err.message;
+            if (errMsg.includes('not found') || errMsg.includes('discontinued') || errMsg.includes('updated')) {
+                alert(`Failed to place order: ${errMsg}\n\nYour cart contains stale or discontinued items (perhaps due to a database re-seed). We will reset your cart to resolve this.`);
+                clearCart();
+            } else {
+                alert('Failed to place order: ' + errMsg);
+            }
         }
     };
 
@@ -123,10 +128,52 @@ const Cart = () => {
 
                         {/* Payment & Summary */}
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-fit space-y-6">
-                            <h3 className="font-black text-lg text-gray-800 border-b border-gray-100 pb-3">Shipping Information</h3>
-                            <ShippingForm shippingAddress={shippingAddress} setShippingAddress={setShippingAddress} />
+                            <div>
+                                <h3 className="font-black text-lg text-gray-800 border-b border-gray-100 pb-3">Order Summary</h3>
+                                <div className="mt-4 space-y-2">
+                                    <div className="flex justify-between text-gray-500 text-sm">
+                                        <span>Subtotal</span>
+                                        <span>Rs. {getCartTotal()}.00</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-500 text-sm">
+                                        <span>Delivery Fee</span>
+                                        <span className="text-green-600 font-medium">FREE</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-800 font-black text-lg pt-2 border-t border-dashed border-gray-100">
+                                        <span>Total</span>
+                                        <span>Rs. {getCartTotal()}.00</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <button onClick={handlePlaceOrder} className="w-full bg-green-600 text-white font-black py-4 rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-100 flex items-center justify-center gap-2">
+                            <div className="space-y-3">
+                                <h3 className="font-black text-sm text-gray-800 border-b border-gray-100 pb-2">Payment Method</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setPaymentMethod('cod')} 
+                                        className={`flex items-center justify-center gap-2 p-3 rounded-2xl border text-xs sm:text-sm font-bold transition-all cursor-pointer ${paymentMethod === 'cod' ? 'border-green-600 bg-green-50 text-green-700 shadow-xs' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        Cash on Delivery
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setPaymentMethod('card')} 
+                                        className={`flex items-center justify-center gap-2 p-3 rounded-2xl border text-xs sm:text-sm font-bold transition-all cursor-pointer ${paymentMethod === 'card' ? 'border-green-600 bg-green-50 text-green-700 shadow-xs' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        Pay with Card
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="font-black text-lg text-gray-800 border-b border-gray-100 pb-3">Shipping Information</h3>
+                                <div className="mt-4">
+                                    <ShippingForm shippingAddress={shippingAddress} setShippingAddress={setShippingAddress} />
+                                </div>
+                            </div>
+
+                            <button onClick={handlePlaceOrder} className="w-full bg-green-600 text-white font-black py-4 rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-100 flex items-center justify-center gap-2 cursor-pointer transform active:scale-98">
                                 <CreditCard size={18} />
                                 <span>Place Grocery Order</span>
                             </button>
