@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API = axios.create({
     // 💡 Localhost වෙනුවට 127.0.0.1 දැම්මා මචං Windows IP පටලැවිල්ල නැති වෙන්නම
-    baseURL: 'http://127.0.0.1:5000/api',
+    baseURL: 'https://grocery-management-system-6ytn.onrender.com/api',
     withCredentials: true, // 💡 Backend එකේ CORS credentials එක්ක මැච් වෙන්න මේක අනිවාර්යයි මචං
     headers: { 'Content-Type': 'application/json' },
 });
