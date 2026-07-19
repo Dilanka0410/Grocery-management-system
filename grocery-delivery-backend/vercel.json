@@ -1,15 +1,18 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "src/server.js",
+      "src": "grocery-delivery-backend/server.js",
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "src/server.js"
+      "source": "/api/(.*)",
+      "destination": "/grocery-delivery-backend/server.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/grocery-delivery-frontend/dist/index.html"
     }
   ]
 }

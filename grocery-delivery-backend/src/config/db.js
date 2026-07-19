@@ -1,29 +1,21 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-    const candidates = [
-        process.env.MONGO_URI,
-        'mongodb://127.0.0.1:27017/grocery-delivery',
-        'mongodb://localhost:27017/grocery-delivery'
-    ].filter(Boolean);
+    try {
+        // Render එකේ ඉන්නකොට තියෙන MONGO_URI එක ගන්නවා. නැත්නම් localhost එකට යනවා.
+        const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/grocery-delivery';
 
-    let lastError = null;
+        const conn = await mongoose.connect(uri, {
+            serverSelectionTimeoutMS: 10000, // ටිකක් වෙලා බලන් ඉන්න වෙලාව වැඩි කළා
+            socketTimeoutMS: 45000,
+        });
 
-    for (const uri of candidates) {
-        try {
-            const conn = await mongoose.connect(uri, {
-                serverSelectionTimeoutMS: 5000,
-                retryWrites: false
-            });
-            console.log(`[DATABASE] MongoDB Connected: ${conn.connection.host}`);
-            return;
-        } catch (error) {
-            lastError = error;
-            console.warn(`[DATABASE WARN] Failed to connect to ${uri}: ${error.message}`);
-        }
+        console.log(`[DATABASE] MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`[DATABASE ERROR] Connection failed: ${error.message}`);
+        // Render එකේදී උඩ Error එක දැක්කම ඇයි connect වුනේ නැත්තේ කියලා හොයාගන්න පුළුවන්
+        process.exit(1); 
     }
-
-    throw new Error(`Unable to connect to MongoDB. Last error: ${lastError?.message || 'Unknown error'}`);
 };
 
 module.exports = connectDB;
