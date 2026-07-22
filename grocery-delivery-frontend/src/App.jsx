@@ -7,6 +7,11 @@ import Register from './pages/Register';
 import AdminOrders from './pages/AdminOrders';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Admin imports
+import AdminLayout from './admin/layouts/AdminLayout';
+import DashboardHome from './admin/pages/DashboardHome';
+import ManageProducts from './admin/pages/ManageProducts';
+
 function App() {
   return (
     <div className="App">
@@ -14,7 +19,14 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminOrders /></ProtectedRoute>} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<DashboardHome />} />
+          <Route path="products" element={<ManageProducts />} />
+          <Route path="orders" element={<AdminOrders />} />
+        </Route>
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

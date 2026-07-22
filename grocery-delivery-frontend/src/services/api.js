@@ -19,8 +19,11 @@ API.interceptors.request.use((req) => {
 export const loginAPI = (formData) => API.post('/auth/login', formData);
 export const registerAPI = (formData) => API.post('/auth/register', formData);
 export const fetchProducts = () => API.get('/products');
-export const fetchCategories = () => API.get('/categories');
+export const createProductAPI = (productData) => API.post('/products', productData);
+export const updateProductAPI = (productId, productData) => API.put(`/products/${productId}`, productData);
+export const deleteProductAPI = (productId) => API.delete(`/products/${productId}`);
 
+export const fetchCategories = () => API.get('/categories');
 export const createOrderAPI = (orderData) => API.post('/orders', orderData);
 export const initiatePaymentAPI = (orderId) => API.post(`/orders/${orderId}/pay`, { orderId });
 export const fetchAdminOrders = () => API.get('/admin/orders');

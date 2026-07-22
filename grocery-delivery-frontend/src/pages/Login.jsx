@@ -26,15 +26,22 @@ const Login = () => {
 
             if (token) {
                 // උඹේ Interceptor එක බලන්නේ 'token' කියලා නිසා ඒ නමින්ම save කරමු
-                const user = res.data?.user || res.data?.data?.user;
+                const user = res.data?.user || res.data?.data?.user || {};
+                const userObj = { ...user, role: user.role };
+                
                 localStorage.setItem('token', token);
-                localStorage.setItem('userInfo', JSON.stringify(user || { name: userName }));
+                localStorage.setItem('user', JSON.stringify(userObj));
+                localStorage.setItem('userInfo', JSON.stringify(userObj));
                 localStorage.setItem('user_name', userName);
 
                 alert("Successfully Logged In!");
                 
                 // 💡 මාරු කලා මචං! navigate('/') වෙනුවට මේක දැම්මාම Axios එකට අලුත්ම Token එක ක්ෂණිකව අහුවෙනවා!
-                window.location.href = '/'; 
+                if (user && user.role === 'admin') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/';
+                }
             } else {
                 setError('Login succeeded, but token was not returned from server.');
             }

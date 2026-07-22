@@ -1,18 +1,28 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null;
+  const token = localStorage.getItem('token');
+  
+  // userInfo හරි user හරි key දෙකෙන්ම ගන්න බලනවා
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('userInfo') || '{}');
+  } catch (e) {
+    console.error("Failed to parse user data from localStorage", e);
+  }
 
-    if (!token) {
-        return <Navigate to="/login" />;
-    }
+  console.log("Logged user role:", user?.role);
 
-    if (requiredRole && (!userInfo || userInfo.role !== requiredRole)) {
-        return <Navigate to="/" />;
-    }
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-    return children;
+  // user නැත්නම් හෝ role එක සමාන නැත්නම් Home page එකට යවනවා
+  if (requiredRole && (!user || user.role !== requiredRole)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;

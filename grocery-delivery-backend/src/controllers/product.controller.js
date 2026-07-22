@@ -19,4 +19,22 @@ const createProduct = async (req, res, next) => {
         return ApiResponse.success(res, product, "Product created successfully", 201);
     } catch (error) { next(error); }
 };
-module.exports = { getProducts, createProduct };
+// Product එකක් අයින් කිරීම (Admin ට විතරයි)
+const deleteProduct = async (req, res, next) => {
+    try {
+        const product = await Product.findByIdAndDelete(req.params.id);
+        if (!product) return ApiResponse.error(res, "Product not found", 404);
+        return ApiResponse.success(res, null, "Product deleted successfully");
+    } catch (error) { next(error); }
+};
+
+// Product එකක් යාවත්කාලීන කිරීම (Admin ට විතරයි)
+const updateProduct = async (req, res, next) => {
+    try {
+        const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!product) return ApiResponse.error(res, "Product not found", 404);
+        return ApiResponse.success(res, product, "Product updated successfully");
+    } catch (error) { next(error); }
+};
+
+module.exports = { getProducts, createProduct, deleteProduct, updateProduct };
