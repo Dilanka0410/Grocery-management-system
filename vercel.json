@@ -1,0 +1,15 @@
+{
+  "builds": [
+    {
+      "src": "grocery-delivery-frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/grocery-delivery-frontend/$1"
+    }
+  ]
+}
