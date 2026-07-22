@@ -47,7 +47,7 @@ export const CartProvider = ({ children }) => {
 
         // දෙවනුව බැක්එන්ඩ් ඩේටාබේස් එකට සේව් කරනවා
         try {
-            await axios.post('http://127.0.0.1:5000/api/cart/add', 
+            await axios.post('https://grocery-management-system-6ytn.onrender.com/api/cart/add', 
                 { productId: product._id, quantity: 1 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -66,7 +66,7 @@ export const CartProvider = ({ children }) => {
         setCart(prevCart => prevCart.filter(item => item._id !== productId));
 
         try {
-            await axios.post('http://127.0.0.1:5000/api/cart/remove', 
+            await axios.post('https://grocery-management-system-6ytn.onrender.com/api/cart/remove', 
                 { productId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -91,7 +91,7 @@ export const CartProvider = ({ children }) => {
         }));
 
         try {
-            await axios.put('http://127.0.0.1:5000/api/cart/update', 
+            await axios.put('https://grocery-management-system-6ytn.onrender.com/api/cart/update', 
                 { productId, amount },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API = axios.create({
     // 💡 Pointing this to your local backend so you test all the new code we wrote!
-    baseURL: 'http://127.0.0.1:5000/api',
+    baseURL: 'https://grocery-management-system-6ytn.onrender.com/api',
     withCredentials: true, // 💡 Backend එකේ CORS credentials එක්ක මැච් වෙන්න මේක අනිවාර්යයි මචං
     headers: { 'Content-Type': 'application/json' },
 });
