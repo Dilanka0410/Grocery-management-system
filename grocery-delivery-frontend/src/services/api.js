@@ -19,9 +19,20 @@ API.interceptors.request.use((req) => {
 export const loginAPI = (formData) => API.post('/auth/login', formData);
 export const registerAPI = (formData) => API.post('/auth/register', formData);
 export const fetchProducts = () => API.get('/products');
-export const createProductAPI = (productData) => API.post('/products', productData);
-export const updateProductAPI = (productId, productData) => API.put(`/products/${productId}`, productData);
-export const deleteProductAPI = (productId) => API.delete(`/products/${productId}`);
+export const createProductAPI = (productData) => {
+    const token = localStorage.getItem('token');
+    return API.post('/products', productData, { headers: { Authorization: `Bearer ${token}` } });
+};
+
+export const updateProductAPI = (productId, productData) => {
+    const token = localStorage.getItem('token');
+    return API.put(`/products/${productId}`, productData, { headers: { Authorization: `Bearer ${token}` } });
+};
+
+export const deleteProductAPI = (productId) => {
+    const token = localStorage.getItem('token');
+    return API.delete(`/products/${productId}`, { headers: { Authorization: `Bearer ${token}` } });
+};
 
 export const fetchCategories = () => API.get('/categories');
 export const createOrderAPI = (orderData) => API.post('/orders', orderData);

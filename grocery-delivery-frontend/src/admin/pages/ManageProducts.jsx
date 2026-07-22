@@ -80,17 +80,24 @@ const ManageProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Ensure numbers are converted before sending to API
+      const payload = {
+        ...formData,
+        price: Number(formData.price),
+        stock: Number(formData.stock)
+      };
+
       if (editingProduct) {
-        await updateProductAPI(editingProduct._id, formData);
+        await updateProductAPI(editingProduct._id, payload);
         alert('Product updated successfully!');
       } else {
-        await createProductAPI(formData);
+        await createProductAPI(payload);
         alert('Product created successfully!');
       }
       handleCloseModal();
       loadData();
     } catch (error) {
-      console.error("Error saving product:", error);
+      console.error("Save product error details:", error.response?.data || error.message);
       alert(error.response?.data?.message || 'Failed to save product');
     }
   };
