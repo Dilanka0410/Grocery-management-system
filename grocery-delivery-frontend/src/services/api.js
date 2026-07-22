@@ -44,6 +44,10 @@ export const createOrderAPI = (orderData) => {
         }
     });
 };
+export const fetchMyOrdersAPI = () => {
+    const token = localStorage.getItem('token');
+    return API.get('/orders/myorders', { headers: { Authorization: `Bearer ${token}` } });
+};
 export const initiatePaymentAPI = (orderId) => API.post(`/orders/${orderId}/pay`, { orderId });
 export const fetchAdminOrders = () => {
     const token = localStorage.getItem('token');

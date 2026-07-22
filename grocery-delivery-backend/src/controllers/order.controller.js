@@ -102,5 +102,17 @@ const createOrder = async (req, res, next) => {
         }
     }
 };
+const getMyOrders = async (req, res, next) => {
+    try {
+        const orders = await Order.find({ customer: req.user._id })
+            .populate('items.product', 'name price image')
+            .sort({ createdAt: -1 });
 
-module.exports = { createOrder };
+        return ApiResponse.success(res, orders, "Orders fetched successfully");
+    } catch (error) {
+        console.error('[ORDER] getMyOrders error:', error);
+        return ApiResponse.error(res, 'Failed to fetch orders', 500);
+    }
+};
+
+module.exports = { createOrder, getMyOrders };

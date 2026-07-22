@@ -11,6 +11,7 @@ import AdminLayout from './admin/layouts/AdminLayout';
 import DashboardHome from './admin/pages/DashboardHome';
 import ManageProducts from './admin/pages/ManageProducts';
 import AdminOrders from './admin/pages/AdminOrders';
+import MyOrders from './pages/MyOrders';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/myorders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>

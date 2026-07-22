@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, MapPin, LogOut, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, User, MapPin, LogOut, ShieldCheck, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
@@ -46,10 +46,16 @@ const Navbar = () => {
                         </Link>
 
                         {userInfo ? (
-                            <button onClick={handleLogout} className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full hover:bg-green-700 font-bold text-xs uppercase tracking-wider transition-colors shadow-sm">
-                                <LogOut size={16} />
-                                <span>Logout</span>
-                            </button>
+                            <div className="flex items-center gap-4">
+                                <Link to="/myorders" className="flex items-center gap-2 text-gray-700 hover:text-green-600 font-bold text-xs uppercase tracking-wider transition-colors">
+                                    <Package size={16} />
+                                    <span>My Orders</span>
+                                </Link>
+                                <button onClick={handleLogout} className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full hover:bg-green-700 font-bold text-xs uppercase tracking-wider transition-colors shadow-sm">
+                                    <LogOut size={16} />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
                         ) : (
                             <Link to="/login" className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full hover:bg-green-700 font-bold text-xs uppercase tracking-wider transition-colors shadow-sm">
                                 <User size={16} />
