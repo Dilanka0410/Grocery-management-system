@@ -25,10 +25,12 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+// 1. CORS Middleware එක යොදන්න (Preflight/OPTIONS auto handle වේ)
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
-app.use(helmet());
+// 🚨 app.options('*', cors(corsOptions)); -> Express 5 kompatibility error එක නිසා මේ පේළිය ඉවත් කර ඇත.
+
+app.use(helmet({ crossOriginResourcePolicy: false })); // CORS Shield Compatibility
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
