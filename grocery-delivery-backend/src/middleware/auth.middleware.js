@@ -30,7 +30,7 @@ const protect = async (req, res, next) => {
             
         } catch (error) {
             console.error('JWT Verification Error:', error.message);
-            return ApiResponse.error(res, "Not authorized, token failed", 401);
+            return ApiResponse.error(res, `Not authorized, token failed: ${error.message}`, 401);
         }
     }
 

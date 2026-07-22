@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-    // 💡 Localhost වෙනුවට 127.0.0.1 දැම්මා මචං Windows IP පටලැවිල්ල නැති වෙන්නම
-    baseURL: 'https://grocery-management-system-6ytn.onrender.com/api',
+    // 💡 Pointing this to your local backend so you test all the new code we wrote!
+    baseURL: 'http://127.0.0.1:5000/api',
     withCredentials: true, // 💡 Backend එකේ CORS credentials එක්ක මැච් වෙන්න මේක අනිවාර්යයි මචං
     headers: { 'Content-Type': 'application/json' },
 });
@@ -35,10 +35,25 @@ export const deleteProductAPI = (productId) => {
 };
 
 export const fetchCategories = () => API.get('/categories');
-export const createOrderAPI = (orderData) => API.post('/orders', orderData);
+export const createOrderAPI = (orderData) => {
+    const token = localStorage.getItem('token');
+    return API.post('/orders', orderData, {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        }
+    });
+};
 export const initiatePaymentAPI = (orderId) => API.post(`/orders/${orderId}/pay`, { orderId });
-export const fetchAdminOrders = () => API.get('/admin/orders');
-export const updateOrderStatus = (orderId, status) => API.put(`/admin/orders/${orderId}/status`, { status });
+export const fetchAdminOrders = () => {
+    const token = localStorage.getItem('token');
+    return API.get('/admin/orders', { headers: { Authorization: `Bearer ${token}` } });
+};
+
+export const updateOrderStatus = (orderId, status) => {
+    const token = localStorage.getItem('token');
+    return API.put(`/admin/orders/${orderId}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
+};
 
 // 💡 මෙතන වෙනස් කළා මචං: LocalStorage එකේ තියෙන Token එක කෙලින්ම Header එකට Force කරලා යවනවා!
 export const addToCartAPI = (productId, quantity) => {

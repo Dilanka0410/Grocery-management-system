@@ -4,13 +4,13 @@ import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import AdminOrders from './pages/AdminOrders';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Admin imports
 import AdminLayout from './admin/layouts/AdminLayout';
 import DashboardHome from './admin/pages/DashboardHome';
 import ManageProducts from './admin/pages/ManageProducts';
+import AdminOrders from './admin/pages/AdminOrders';
 
 function App() {
   return (

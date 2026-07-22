@@ -22,6 +22,14 @@ const Cart = () => {
     });
 
     const handlePlaceOrder = async () => {
+        const token = localStorage.getItem('token');
+        console.log("Token sent with order:", token);
+        if (!token) {
+            alert('Please log in to place an order.');
+            window.location.href = '/login';
+            return;
+        }
+
         if (cart.length === 0) return alert("Your cart is empty!");
 
         if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.houseNo || !shippingAddress.street || !shippingAddress.city || !shippingAddress.district || !shippingAddress.province) {
